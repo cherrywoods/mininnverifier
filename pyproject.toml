@@ -20,7 +20,7 @@ requires = ["uv_build>=0.9.18,<0.12.0"]
 build-backend = "uv_build"
 
 [tool.uv.sources]
-testrunner = { path = "tests/runner", editable = true }
+testrunner = { path = "tests/testrunner", editable = true }
 
 [tool.ruff]
 line-length = 100
