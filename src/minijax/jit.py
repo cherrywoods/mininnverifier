@@ -13,7 +13,8 @@ def jit(fn):
         if cache_key not in cache:
             cg, out_structure = make_graph(fn, return_out_structure=True)(*args, **kwargs)
             cache[cache_key] = (prune_unused(cg), out_structure)  # in jax: compile
-        return run_graph(*cache[cache_key], *args)  # in jax: lower
+        cg, out_structure = cache[cache_key]
+        return run_graph(cg, *args, out_structure=out_structure)  # in jax: lower
 
     return jit_fn
 
@@ -28,7 +29,7 @@ def prune_unused(compute_graph):  # Remove equations that do not contribute to t
     return ComputeGraph(compute_graph.invars, compute_graph.outvars, tuple(eqns))
 
 
-def run_graph(compute_graph, out_structure, *args):
+def run_graph(compute_graph, *args, out_structure=None):
     args, _ = flatten(args)
 
     env = {v: a for v, a in zip(compute_graph.invars, args)}
@@ -36,4 +37,6 @@ def run_graph(compute_graph, out_structure, *args):
         invals = [a.value if a.is_const else env[a] for a in eqn.inputs]
         env[eqn.outvar] = eqn.primitive(*invals, **eqn.options)
     outvals = [env[v] for v in compute_graph.outvars]
-    return unflatten(out_structure, outvals)
+    if out_structure is not None:
+        outvals = unflatten(out_structure, outvals)
+    return outvals

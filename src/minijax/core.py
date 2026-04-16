@@ -10,6 +10,10 @@ class Value(ABC):
         self.interpreter = interpreter
         self.shape = shape
 
+    @property
+    def ndim(self):
+        return len(self.shape)
+
     def __neg__(self):
         return neg(self)
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2025 by David Boetius
+# Copyright (c) 2026 by David Boetius
 # Licensed under the MIT License.
 """Compute gradients of a mininn network with respect to its inputs.
 
@@ -14,13 +14,15 @@ Filenames are printed to stdout, one per line.
 
 import argparse
 import sys
+from functools import partial
 from pathlib import Path
 
 import numpy as np
 
 from minijax.serialize import load
 from minijax.eval import Array
-from minijax.grad import _forward, _backwards
+from minijax.grad import vjp
+from minijax.jit import run_graph
 
 
 def main():
@@ -47,9 +49,9 @@ def main():
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    primals = _forward(graph, inputs)
+    fn = partial(run_graph, graph)
     out_tangents = [Array(np.ones(ov.shape)) for ov in graph.outvars]
-    in_tangents = _backwards(graph, primals, out_tangents)
+    in_tangents = vjp(fn)(inputs, out_tangents)
 
     for i, grad in enumerate(in_tangents):
         out_path = args.output_dir / f"grad_{i}.bin"

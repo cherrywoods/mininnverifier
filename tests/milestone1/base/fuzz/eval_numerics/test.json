@@ -1,0 +1,7 @@
+{
+  "command": "fuzz_eval",
+  "n_trials": 100,
+  "seed": 0,
+  "primitives": "safe",
+  "check_nan_inf": true
+}

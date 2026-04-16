@@ -58,7 +58,7 @@ def _backwards(cg, primals, out_tangents):
 
     for eqn in reversed(cg.equations):
         in_primals = [a.value if a.is_const else primals[a] for a in eqn.inputs]
-        out_tangent = tangents[eqn.outvar] if eqn.outvar in tangents else Array(0.0)
+        out_tangent = tangents[eqn.outvar] if eqn.outvar in tangents else zeros(eqn.outvar.shape)
         out_primal = primals[eqn.outvar]
 
         in_tangents = vjp_rules[eqn.primitive](out_tangent, out_primal, *in_primals, **eqn.options)
@@ -67,12 +67,33 @@ def _backwards(cg, primals, out_tangents):
         for v, t in zip(eqn.inputs, in_tangents, strict=True):
             update(v, t)
 
-    return [tangents[iv] for iv in cg.invars]
+    return [tangents.get(iv, zeros(iv.shape)) for iv in cg.invars]
 
 
 def unbroadcast(tangent, primal):
-    added_axes = [i for i in range(len(tangent.shape) - len(primal.shape))]
-    return core.reduce_sum(tangent, tuple(added_axes))
+    added = [i for i in range(len(tangent.shape) - len(primal.shape))]
+    tangent = core.reduce_sum(tangent, tuple(added))
+    # tangent and primal now have the same number of axes
+    expanded = [i for i, (t, p) in enumerate(zip(tangent.shape, primal.shape)) if t != p]
+    return core.reduce_sum(tangent, tuple(expanded), keepaxes=True)
+
+
+def broadcast_to(tangent, primal):
+    # exploiting that add does broadcasting
+    return core.add(tangent, zeros(primal.shape))
+
+
+def vjp_dot(t, _, x, y):
+    if y.ndim == 1:
+        dx = core.expand_dims(t, axes=-1) @ core.expand_dims(y, axes=0)
+    else:
+        dx = t @ core.transpose(y)
+
+    if x.ndim == 1:
+        dy = core.expand_dims(x, axes=-1) @ core.expand_dims(t, axes=0)
+    else:
+        dy = core.transpose(x) @ t
+    return dx, dy
 
 
 def vjp_where(tangent, out, cond, true_val, false_val):
@@ -86,8 +107,8 @@ vjp_rules = {
     core.reshape: lambda t, _, x, new_shape: core.reshape(t, x.shape),
     core.neg: lambda t, *_: -t,
     core.add: lambda t, *_: (t, t),
-    core.reduce_sum: lambda t, _, x, axes: core.expand_dims(t, axes),
-    core.dot: lambda t, _, x, y: (t @ core.transpose(y), core.transpose(x) @ t),
+    core.reduce_sum: lambda t, _, x, axes: broadcast_to(core.expand_dims(t, axes), x),
+    core.dot: vjp_dot,
     core.mul: lambda t, _, x, y: (t * y, x * t),
     core.reciprocal: lambda t, _, x: -core.reciprocal(core.square(x)) * t,
     core.relu: lambda t, out, x: core.where(out, t, Array(0)),  # np.bool_(0) = False

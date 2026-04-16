@@ -1,0 +1,7 @@
+{
+  "command": "fuzz_grad",
+  "n_trials": 400,
+  "seed": 0,
+  "primitives": "all",
+  "check_nan_inf": false
+}
