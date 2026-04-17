@@ -1,0 +1,11 @@
+{
+    "command": "grad",
+    "network": "resources/conv_batch_kernel5_stride2_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_grad_0.bin"
+    ],
+    "description": "1-D convolution with 5-tap Gaussian-like filter, stride=2, on a batch of 4 length-32 sequences; output length = (32-5)//2+1 = 14"
+}

@@ -1,0 +1,11 @@
+{
+    "command": "eval",
+    "network": "resources/leaky_relu_conv_net_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_output_0.bin"
+    ],
+    "description": "single-layer conv net: pad(1,1,dil=1) \u2192 conv(kernel=3,stride=1) \u2192 leaky_relu(slope=0.1); batch=4, length=20, output same length"
+}

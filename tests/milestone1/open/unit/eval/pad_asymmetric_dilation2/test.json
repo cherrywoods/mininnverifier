@@ -1,0 +1,11 @@
+{
+    "command": "eval",
+    "network": "resources/pad_asymmetric_dilation2_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_output_0.bin"
+    ],
+    "description": "asymmetric padding (2 left, 1 right) with dilation=2 on a length-10 sequence; dilation inserts zeros between each element before padding"
+}

@@ -1,0 +1,11 @@
+{
+    "command": "eval",
+    "network": "resources/squeeze_excite_net_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_output_0.bin"
+    ],
+    "description": "squeeze-and-excitation: local conv+leaky_relu branch recalibrated by a global avg-pool gate (elu(global_avg)+1); batch=4, length=20"
+}

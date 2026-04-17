@@ -1,0 +1,8 @@
+{
+    "command": "fuzz_eval",
+    "n_trials": 300,
+    "seed": 7119429,
+    "primitives": "safe",
+    "check_nan_inf": false,
+    "description": "fuzz forward-pass with safe primitives (excludes log/sqrt/reciprocal/exp) to verify no crashes or shape errors"
+}

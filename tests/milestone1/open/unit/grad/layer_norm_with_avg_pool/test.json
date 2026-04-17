@@ -1,0 +1,11 @@
+{
+    "command": "grad",
+    "network": "resources/layer_norm_with_avg_pool_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_grad_0.bin"
+    ],
+    "description": "avg_pool(window=5,stride=2) followed by layer normalisation; output length=13; batch=4"
+}

@@ -1,0 +1,11 @@
+{
+    "command": "eval",
+    "network": "resources/dilated_conv_single_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_output_0.bin"
+    ],
+    "description": "single dilated convolution: 3-tap kernel pre-dilated to effective length 5 (dilation=2) via pad(0,0,dil=2); same-padding preserves length; followed by leaky_relu; batch=4, length=24"
+}

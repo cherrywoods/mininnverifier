@@ -1,0 +1,11 @@
+{
+    "command": "grad",
+    "network": "resources/bottleneck_net_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_grad_0.bin"
+    ],
+    "description": "bottleneck: avg_pool(3,3) compresses (4,30)\u2192(4,10); GELU conv at low resolution; skip from pooled input; batch=4"
+}

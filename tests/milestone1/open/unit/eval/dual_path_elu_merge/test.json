@@ -1,0 +1,12 @@
+{
+    "command": "eval",
+    "network": "resources/dual_path_elu_merge_network.mininn",
+    "inputs": [
+        "resources/input_0.bin",
+        "resources/input_1.bin"
+    ],
+    "expected_outputs": [
+        "expected_output_0.bin"
+    ],
+    "description": "two-input dual-path network: path1=pad+conv(k=5,stride=2)+ELU on length-32 input, path2=conv(same-pad,k=3)+leaky_relu on length-16 input; both paths \u2192 length 16, merged by element-wise multiply; batch=4"
+}

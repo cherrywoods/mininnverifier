@@ -1,0 +1,11 @@
+{
+    "command": "grad",
+    "network": "resources/avg_pool_deep_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_grad_0.bin"
+    ],
+    "description": "two sequential avg-pool stages: avg(window=3,stride=3) then avg(window=2,stride=2); batch=4, length=24 \u2192 8 \u2192 4"
+}

@@ -1,0 +1,8 @@
+{
+    "command": "fuzz_grad",
+    "n_trials": 300,
+    "seed": 806830,
+    "primitives": "safe",
+    "check_nan_inf": false,
+    "description": "fuzz gradient computation with safe primitives to verify no crashes or shape errors"
+}

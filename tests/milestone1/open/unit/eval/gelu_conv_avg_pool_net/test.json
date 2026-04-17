@@ -1,0 +1,11 @@
+{
+    "command": "eval",
+    "network": "resources/gelu_conv_avg_pool_net_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_output_0.bin"
+    ],
+    "description": "conv(same-pad,kernel=3) \u2192 GELU \u2192 avg_pool(window=4,stride=2); batch=4, length=28, output length=13"
+}

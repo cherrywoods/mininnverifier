@@ -1,0 +1,8 @@
+{
+    "command": "fuzz_eval",
+    "n_trials": 1000,
+    "seed": 8690109,
+    "primitives": "all",
+    "check_nan_inf": false,
+    "description": "broad forward-pass fuzz: 1000 trials over all primitives to stress rare shape/dtype combinations"
+}

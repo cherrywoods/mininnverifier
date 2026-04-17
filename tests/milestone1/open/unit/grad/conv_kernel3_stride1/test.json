@@ -1,0 +1,11 @@
+{
+    "command": "grad",
+    "network": "resources/conv_kernel3_stride1_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_grad_0.bin"
+    ],
+    "description": "1-D cross-correlation with smoothing kernel [0.25, 0.5, 0.25], stride=1, on 30 linearly spaced values"
+}

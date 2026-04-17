@@ -1,0 +1,8 @@
+{
+    "command": "fuzz_grad",
+    "n_trials": 200,
+    "seed": 9326167,
+    "primitives": "all",
+    "check_nan_inf": false,
+    "description": "fuzz gradient computation with all supported primitives to verify backward-pass robustness"
+}

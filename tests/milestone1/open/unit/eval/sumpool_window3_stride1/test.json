@@ -1,0 +1,11 @@
+{
+    "command": "eval",
+    "network": "resources/sumpool_window3_stride1_network.mininn",
+    "inputs": [
+        "resources/input_0.bin"
+    ],
+    "expected_outputs": [
+        "expected_output_0.bin"
+    ],
+    "description": "1-D sum pooling with window_size=3, stride=1, on 24 linearly spaced values; output length=22"
+}
