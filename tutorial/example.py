@@ -1,6 +1,6 @@
-from eval import Array, EvalInterpreter
-from core import relu, set_interpreter
-from compute_graph import make_compute_graph
+from minijax.eval import Array, EvalInterpreter
+from minijax.core import relu, set_interpreter
+from minijax.compute_graph import make_compute_graph
 
 
 def nn(x):

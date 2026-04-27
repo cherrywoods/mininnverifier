@@ -1,7 +1,7 @@
 import itertools
 from dataclasses import dataclass
 
-from core import InterpreterABC, ValueABC, Primitive, set_interpreter
+from .core import InterpreterABC, ValueABC, Primitive, set_interpreter
 
 
 @dataclass(frozen=True)

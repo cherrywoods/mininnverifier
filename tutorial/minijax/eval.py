@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core import InterpreterABC, ValueABC, neg, add, mul, relu
+from .core import InterpreterABC, ValueABC, neg, add, mul, relu
 
 
 class EvalInterpreter(InterpreterABC):
