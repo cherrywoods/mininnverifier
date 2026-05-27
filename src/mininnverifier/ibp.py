@@ -52,7 +52,7 @@ class IBPInterpreter(core.Interpreter[IBPValue]):
     def process(self, primitive, values, options):
         if all(box.is_point for box in values):
             res = primitive(*[box.lb for box in values], **options)
-            return IBPValue(self, res, res)
+            return IBPValue(self, res, res, is_point=True)
 
         if primitive in mono_non_dec_primitives:
             out_lb, out_ub = ibp_monotonic_non_decreasing(primitive, *values, **options)
@@ -92,7 +92,7 @@ def ibp_linear(fn, *args, **options):
         return ibp_linear(lambda y, x: fn(x, y, **options), y, x)
 
 
-mono_non_dec_primitives = (
+mono_non_dec_primitives = {
     core.expand_dims,
     core.moveaxis,
     core.reshape,
@@ -100,6 +100,6 @@ mono_non_dec_primitives = (
     core.reduce_sum,
     core.relu,
     core.exp,
-)
-mono_non_inc_primitives = (core.neg,)
-linear_primitives = (core.dot, core.mul)
+}
+mono_non_inc_primitives = {core.neg}
+linear_primitives = {core.dot, core.mul}
