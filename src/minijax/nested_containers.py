@@ -12,13 +12,19 @@ flatteners = {
     tuple: lambda t: (t, None),
     list: lambda lst: (tuple(lst), None),
     dict: lambda d: (tuple(d.values()), d.keys()),
-    type(None): lambda n: ((), None),
+    str: lambda s: ((), s),
+    float: lambda f: ((), f),
+    int: lambda i: ((), i),
+    type(None): lambda _: ((), None),
 }
 
 unflatteners = {
     tuple: lambda vals, _: tuple(vals),
     list: lambda vals, _: list(vals),
     dict: lambda vals, keys: {k: v for k, v in zip(keys, vals, strict=True)},
+    str: lambda _, s: s,
+    float: lambda _, f: f,
+    int: lambda _, i: i,
     type(None): lambda *_: None,
 }
 

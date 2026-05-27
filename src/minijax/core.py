@@ -109,5 +109,9 @@ def div(x, y):
     return mul(x, reciprocal(y))
 
 
+def abs(x):
+    return add(relu(x), relu(neg(x)))
+
+
 def transpose(x):
     return moveaxis(x, -1, -2)
