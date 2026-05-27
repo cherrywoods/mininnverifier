@@ -1,7 +1,10 @@
 import itertools
 from dataclasses import dataclass
 
-from .core import InterpreterABC, ValueABC, Primitive, push_interpreter
+import numpy as np
+
+from .core import InterpreterABC, ValueABC, Primitive, push_interpreter, pop_interpreter
+from .core import neg, add, mul, matmul, relu, transpose
 
 
 @dataclass(frozen=True)
@@ -18,7 +21,6 @@ class ComputeGraph:
 
 @dataclass(frozen=True)
 class Equation:
-    # outvar = add invar1 invar2
     primitive: Primitive
     invars: tuple[Var, ...]
     outvar: Var
@@ -32,14 +34,15 @@ _var_ids = itertools.count()
 
 
 class Var:
-    def __init__(self):
+    def __init__(self, shape):
         self._id = next(_var_ids)
+        self.shape = shape
 
     def __repr__(self) -> str:
         def letters(i):
             return chr(97 + i) if i < 26 else letters(i // 26 - 1) + chr(97 + (i % 26))
 
-        return f"{letters(self._id)}"
+        return f"{letters(self._id)}{[self.shape]}"
 
 
 class MakeCG(InterpreterABC):
@@ -48,7 +51,8 @@ class MakeCG(InterpreterABC):
 
     def process_primitive(self, primitive, *args, **options):
         invars = [a.var for a in args]
-        outvar = Var()
+        out_shape = shape_rules[primitive](*[iv.shape for iv in invars], **options)
+        outvar = Var(out_shape)
         eqn = Equation(primitive, tuple(invars), outvar)
         self.equations.append(eqn)
         return AbstractValue(outvar)
@@ -57,13 +61,35 @@ class MakeCG(InterpreterABC):
 @dataclass
 class AbstractValue(ValueABC):
     var: Var
-    shape: tuple[int, ...]
+
+    @property
+    def shape(self):
+        return self.var.shape
+
+
+def matmul_shape_rule(x_shape, y_shape):
+    out_shape = ()
+    if len(x_shape) > 1:
+        out_shape += (x_shape[0],)
+    elif len(y_shape) > 1:
+        out_shape += (y_shape[1],)
+    return out_shape
+
+
+shape_rules = {
+    neg: lambda x_shape: x_shape,
+    relu: lambda x_shape: x_shape,
+    add: lambda x_shape, y_shape: np.broadcast_shapes(x_shape, y_shape),
+    mul: lambda x_shape, y_shape: np.broadcast_shapes(x_shape, y_shape),
+    transpose: lambda x_shape: tuple(reversed(x_shape)),
+    matmul: matmul_shape_rule,
+}
 
 
 def make_compute_graph(fn, *args) -> ComputeGraph:
     interpreter = MakeCG()
     push_interpreter(interpreter)
-    invars = [Var() for _ in args]
+    invars = [Var(a.shape) for a in args]
     invals = [AbstractValue(v) for v in invars]
 
     outvals = fn(*invals)
@@ -71,5 +97,5 @@ def make_compute_graph(fn, *args) -> ComputeGraph:
         outvals = (outvals,)
 
     outvars = [av.var for av in outvals]
+    pop_interpreter()
     return ComputeGraph(invars, outvars, interpreter.equations)
-

@@ -21,6 +21,7 @@ matmul = Primitive("matmul", 2)
 relu = Primitive("relu", 1)
 transpose = Primitive("transpose", 1)
 # moveaxis = Primitive("moveaxis", 1, ("start", "target"))
+relu_derivative = Primitive("relu_derivative", 1)
 
 
 interpreter_stack = []
