@@ -23,7 +23,7 @@ def ibp(fn):
         flat_args = flatten(args, is_leaf=box_or_val)[0]
         level_values = [a.lb if isinstance(a, Box) else a for a in flat_args]
         interpreter = core.new_interpreter(IBPInterpreter, level_values)
-        vals = map_structure(interpreter.wrap, args, is_leaf=lambda x: isinstance(x, (Box, Value)))
+        vals = map_structure(interpreter.wrap, args, is_leaf=box_or_val)
 
         out_bounds = fn(*vals, **kwargs)
         return map_structure(lambda ibp_val: Box(ibp_val.lb, ibp_val.ub), out_bounds)
@@ -40,9 +40,6 @@ class IBPValue(core.Value):
 
 
 class IBPInterpreter(core.Interpreter[IBPValue]):
-    def __init__(self, level: int):
-        super().__init__(level)
-
     def wrap(self, value):
         if isinstance(value, IBPValue):
             return value
@@ -51,8 +48,8 @@ class IBPInterpreter(core.Interpreter[IBPValue]):
         return IBPValue(self, value, value, is_point=True)
 
     def process(self, primitive, values, options):
-        if all(box.is_point for box in values):
-            res = primitive(*[box.lb for box in values], **options)
+        if all(v.is_point for v in values):
+            res = primitive(*[v.lb for v in values], **options)
             return IBPValue(self, res, res, is_point=True)
 
         if primitive in mono_non_dec_primitives:
@@ -75,7 +72,7 @@ def ibp_monotonic_non_decreasing(fn, *args, **options):
 
 def ibp_monotonic_non_increasing(fn, *args, **options):
     out_ub, out_lb = ibp_monotonic_non_decreasing(fn, *args, **options)
-    return out_lb, out_ub
+    return out_lb, out_ub  # swaped from ibp_monotonic_non_decreasing
 
 
 def ibp_linear(fn, x, y, **options):
@@ -85,8 +82,8 @@ def ibp_linear(fn, x, y, **options):
         x = x.lb
         y_mid = (y.ub + y.lb) * Array(0.5)
         y_ran = (y.ub - y.lb) * Array(0.5)
-        out_mid = fn(x, y_mid)
-        out_ran = fn(abs(x), y_ran)
+        out_mid = fn(x, y_mid, **options)
+        out_ran = fn(abs(x), y_ran, **options)
         return out_mid - out_ran, out_mid + out_ran
     elif y.is_point:
         return ibp_linear(lambda y, x: fn(x, y, **options), y, x)
