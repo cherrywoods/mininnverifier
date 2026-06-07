@@ -14,9 +14,13 @@ class Box:
     ub: core.Value
 
 
+def box_or_val(obj):
+    return isinstance(obj, (Box, core.Value))
+
+
 def ibp(fn):
     def ibp_fn(*args: Box | core.Value, **kwargs):
-        flat_args = flatten(args, is_leaf=_is_ibp_leaf)[0]
+        flat_args = flatten(args, is_leaf=box_or_val)[0]
         level_values = [a.lb if isinstance(a, Box) else a for a in flat_args]
         interpreter = core.new_interpreter(IBPInterpreter, level_values)
         vals = map_structure(interpreter.wrap, args, is_leaf=lambda x: isinstance(x, (Box, Value)))
@@ -74,8 +78,7 @@ def ibp_monotonic_non_increasing(fn, *args, **options):
     return out_lb, out_ub
 
 
-def ibp_linear(fn, *args, **options):
-    x, y = args
+def ibp_linear(fn, x, y, **options):
     if not x.is_point and not y.is_point:
         raise NotImplementedError(f"No IBP rule for bilinear application of primitive {fn}")
     elif x.is_point:
