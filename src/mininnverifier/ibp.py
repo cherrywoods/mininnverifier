@@ -1,8 +1,9 @@
-# Copyright (c) 2025 by David Boetius
-# Licensed under the MIT Licensed.
+# Copyright (c) 2026 by David Boetius
+# Licensed under the MIT License.
 from dataclasses import dataclass
 
 from minijax import core
+from minijax.core import Value, abs
 from minijax.nested_containers import flatten, map_structure
 from minijax.eval import Array
 
@@ -13,16 +14,12 @@ class Box:
     ub: core.Value
 
 
-def _is_ibp_leaf(x):
-    return isinstance(x, (Box, core.Value))
-
-
 def ibp(fn):
     def ibp_fn(*args: Box | core.Value, **kwargs):
         flat_args = flatten(args, is_leaf=_is_ibp_leaf)[0]
         level_values = [a.lb if isinstance(a, Box) else a for a in flat_args]
         interpreter = core.new_interpreter(IBPInterpreter, level_values)
-        vals = map_structure(interpreter.wrap, args, is_leaf=_is_ibp_leaf)
+        vals = map_structure(interpreter.wrap, args, is_leaf=lambda x: isinstance(x, (Box, Value)))
 
         out_bounds = fn(*vals, **kwargs)
         return map_structure(lambda ibp_val: Box(ibp_val.lb, ibp_val.ub), out_bounds)
@@ -86,7 +83,7 @@ def ibp_linear(fn, *args, **options):
         y_mid = (y.ub + y.lb) * Array(0.5)
         y_ran = (y.ub - y.lb) * Array(0.5)
         out_mid = fn(x, y_mid)
-        out_ran = fn(core.abs(x), y_ran)
+        out_ran = fn(abs(x), y_ran)
         return out_mid - out_ran, out_mid + out_ran
     elif y.is_point:
         return ibp_linear(lambda y, x: fn(x, y, **options), y, x)
