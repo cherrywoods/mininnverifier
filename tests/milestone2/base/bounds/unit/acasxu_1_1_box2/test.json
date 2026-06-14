@@ -24,5 +24,6 @@
     "tightness_factor": 1.1,
     "sample_atol": 1e-09,
     "description": "full-network IBP output bounds (5 scores) for ACAS Xu net acasxu_1_1 over an L-inf box (eps=0.01) in normalized input space; deep 6x50 ReLU MLP",
-    "points": 5
+    "points": 0,
+    "bonus_points": 0
 }

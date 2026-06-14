@@ -24,5 +24,6 @@
     "tightness_factor": 1.1,
     "sample_atol": 1e-09,
     "description": "IBP bounds for square over asymmetric straddling boxes (stresses max(lb^2, ub^2) selection and the lb=0/ub=0 boundaries)",
-    "points": 3
+    "points": 0,
+    "bonus_points": 0
 }

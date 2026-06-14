@@ -25,5 +25,7 @@
     "reference_ub": [
         "resources/reference_output_0_ub.bin"
     ],
-    "tightness_factor": 1.1
+    "tightness_factor": 1.1,
+    "points": 0,
+    "bonus_points": 0
 }

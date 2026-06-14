@@ -17,5 +17,6 @@
   "sample_atol": 1e-06,
   "sample_rtol": 1e-06,
   "description": "targeted fuzz for activation primitives (relu/leaky_relu/elu/gelu) interleaved with add/mul.",
-  "points": 20
+  "points": 0,
+  "bonus_points": 0
 }

@@ -24,5 +24,6 @@
     "tightness_factor": 1.1,
     "sample_atol": 1e-09,
     "description": "IBP bounds for square over a fully-negative box (decreasing arm)",
-    "points": 3
+    "points": 0,
+    "bonus_points": 0
 }

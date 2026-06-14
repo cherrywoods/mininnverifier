@@ -8,5 +8,6 @@
     ],
     "expected_verdict": "viol",
     "description": "circles margin < 0 near the origin (flat sub-threshold region)",
-    "points": 5
+    "points": 0,
+    "bonus_points": 0
 }

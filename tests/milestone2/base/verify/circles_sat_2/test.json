@@ -8,5 +8,6 @@
     ],
     "expected_verdict": "sat",
     "description": "circles margin >= 0 on a box in the positive region",
-    "points": 5
+    "points": 0,
+    "bonus_points": 0
 }

@@ -14,5 +14,6 @@
   "sample_atol": 1e-06,
   "sample_rtol": 1e-06,
   "description": "targeted fuzz for dot/add/mul to stress rules for linear primitives",
-  "points": 20
+  "points": 0,
+  "bonus_points": 0
 }

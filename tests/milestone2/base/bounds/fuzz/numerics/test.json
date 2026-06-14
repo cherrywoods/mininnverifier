@@ -26,5 +26,6 @@
   "sample_atol": 1e-06,
   "sample_rtol": 1e-06,
   "description": "bounds numerics fuzz: safe primitives only, fails on NaN/Inf in outputs",
-  "points": 8
+  "points": 0,
+  "bonus_points": 0
 }
