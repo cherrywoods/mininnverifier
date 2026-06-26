@@ -7,7 +7,7 @@ from . import core
 
 class Array(core.Value):
     def __init__(self, array_like):
-        self.array = np.asarray(array_like, dtype=np.float64)
+        self.array = np.asarray(array_like)
         super().__init__(EvalInterpreter(), self.array.shape)
 
     def item(self):
@@ -30,6 +30,11 @@ def ones(shape):
     return full(shape, 1.0)
 
 
+def broadcast_to(value, shape):
+    # exploiting that add does broadcasting
+    return core.add(value, zeros(shape))
+
+
 class EvalInterpreter(core.Interpreter[Array]):
     def __init__(self):
         super().__init__(0)
@@ -48,9 +53,11 @@ class EvalInterpreter(core.Interpreter[Array]):
 
 
 def np_dot(x, y):  # np.dot doesn't broadcast
-    if y.ndim <= 1:
+    if x.ndim == 0 or y.ndim == 0:
+        return x * y
+    elif y.ndim <= 1 or x.ndim <= 1:
         return np.dot(x, y)
-    return np.einsum("...j,...jk", x, y)
+    return np.einsum("...ij,...jk->...ik", x, y)
 
 
 eval_rules = {
@@ -69,4 +76,11 @@ eval_rules = {
     core.exp: np.exp,
     core.log: np.log,
     core.where: np.where,
+    core.greater_equal: np.greater_equal,
+    core.less_equal: np.less_equal,
+    core.elementwise_not: np.bitwise_not,
+    core.elementwise_and: np.bitwise_and,
+    core.concat_two: lambda x, y, axis: np.concatenate([x, y], axis),
+    core.head: lambda x, axis, index: np.split(x, [index], axis)[0],
+    core.tail: lambda x, axis, index: np.split(x, [index], axis)[1],
 }

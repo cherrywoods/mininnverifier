@@ -79,6 +79,14 @@ class ComputeGraph:
         repr += "\n".join([f"  {eqn}" for eqn in self.equations]) + "\n"
         return repr + "output: " + " ".join(map(str, self.outvars))
 
+    def __call__(self, *args):
+        values = {iv: v for iv, v in zip(self.invars, args, strict=True)}
+        for eqn in self.equations:
+            args = [v.value if v.is_const else values[v] for v in eqn.inputs]
+            out = eqn.primitive(*args, **eqn.options)
+            values[eqn.outvar] = out
+        return values
+
 
 class Tracer(Value):
     def __init__(self, interpreter, value, const=False):

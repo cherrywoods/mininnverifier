@@ -32,6 +32,33 @@ class Value(ABC):
     def __matmul__(self, other):
         return dot(self, other)
 
+    def __ge__(self, other):
+        return greater_equal(self, other)
+
+    def __le__(self, other):
+        return less_equal(self, other)
+
+    def __gt__(self, other):
+        return greater_than(self, other)
+
+    def __lt__(self, other):
+        return less_than(self, other)
+
+    def __eq__(self, other):
+        return equals(self, other)
+
+    def __ne__(self, other):
+        return elementwise_not(equals(self, other))
+
+    def __invert__(self):
+        return elementwise_not(self)
+
+    def __and__(self, other):
+        return elementwise_and(self, other)
+
+    def __or__(self, other):
+        return elementwise_or(self, other)
+
 
 class Interpreter[V: Value](ABC):
     def __init__(self, level: int):
@@ -100,6 +127,15 @@ moveaxis = Primitive("moveaxis", 1, ("source", "destination"))
 reshape = Primitive("reshape", 1, ("new_shape",))
 reduce_sum = ReduceSumPrimitive()
 
+greater_equal = Primitive("greater_equal", 2)
+less_equal = Primitive("less_equal", 2)
+elementwise_not = Primitive("not", 1)
+elementwise_and = Primitive("and", 2)
+
+concat_two = Primitive("concat_two", 2, ("axis",))
+head = Primitive("head", 1, ("axis", "index"))
+tail = Primitive("tail", 1, ("axis", "index"))
+
 
 def sub(x, y):
     return add(x, neg(y))
@@ -113,5 +149,54 @@ def abs(x):
     return add(relu(x), relu(neg(x)))
 
 
+def maximum(x, y):
+    return add(y, relu(x - y))
+
+
+def minimum(x, y):
+    return sub(y, relu(y - x))
+
+
+def clip(x, lower, upper):
+    return minimum(maximum(x, lower), upper)
+
+
 def transpose(x):
     return moveaxis(x, -1, -2)
+
+
+def less_than(x, y):
+    return elementwise_not(greater_equal(x, y))
+
+
+def greater_than(x, y):
+    return elementwise_not(less_equal(x, y))
+
+
+def elementwise_or(x, y):
+    return elementwise_not(elementwise_and(elementwise_not(x), elementwise_not(y)))
+
+
+def equals(x, y):
+    return elementwise_and(greater_equal(x, y), less_equal(x, y))
+
+def concat(arg0, *args, axis: int = 0):
+    if len(args) == 0:
+        return arg0
+
+    res = arg0
+    for arg in args:
+        res = concat_two(res, arg, axis=axis)
+    return res
+
+
+def split(x, indices, axis: int = 0):
+    pieces = []
+    rest, start = x, 0
+    for index in indices:
+        pieces.append(head(rest, axis=axis, index=index - start))
+        rest = tail(rest, axis=axis, index=index - start)
+        start = index
+    pieces.append(rest)
+    return tuple(pieces)
+

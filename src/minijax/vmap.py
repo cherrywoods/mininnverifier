@@ -3,6 +3,7 @@
 from typing import Any
 
 from . import core
+from .eval import broadcast_to
 from .nested_containers import flatten, map_structure
 
 
@@ -47,6 +48,8 @@ class VmapInterpreter(core.Interpreter):
         base_vals = [vval.base_value for vval in vvals]
         if primitive is core.dot:
             return vmap_dot(*vvals, **options)
+        elif primitive is core.concat_two:
+            return vmap_concat_two(*vvals, **options)
         elif primitive in vmap_rules:
             result = vmap_rules[primitive](*base_vals, **options)
         else:
@@ -63,6 +66,25 @@ def vmap_dot(x: Vmapped, y: Vmapped):
     return Vmapped(x.interpreter, out, batch_axis=0)
 
 
+def vmap_concat_two(x: Vmapped, y: Vmapped, axis):
+    if x.batch_axis is None and y.batch_axis is None:
+        out = core.concat_two(x.base_value, y.base_value, axis=axis)
+        return Vmapped(x.interpreter, out, batch_axis=None)
+
+    batch_size = x.base_value.shape[0] if x.batch_axis is not None else y.base_value.shape[0]
+    x_base = _ensure_batched(x, batch_size)
+    y_base = _ensure_batched(y, batch_size)
+    out = core.concat_two(x_base, y_base, axis=_shift(axis))
+    return Vmapped(x.interpreter, out, batch_axis=0)
+
+
+def _ensure_batched(value: Vmapped, batch_size):
+    # Already batched (axis 0) => use as-is; otherwise broadcast in a leading batch axis.
+    if value.batch_axis is not None:
+        return value.base_value
+    return broadcast_to(value.base_value, (batch_size,) + tuple(value.base_value.shape))
+
+
 def _shift(index):
     return index + 1 if index >= 0 else index
 
@@ -72,4 +94,6 @@ vmap_rules = {
     core.moveaxis: lambda x, **axes: core.moveaxis(x, **{k: _shift(v) for k, v in axes.items()}),
     core.reshape: lambda x, new_shape: core.reshape(x, x.shape[:1] + new_shape),
     core.reduce_sum: lambda x, axes: core.reduce_sum(x, [_shift(ax) for ax in axes]),
+    core.head: lambda x, axis, index: core.head(x, _shift(axis), index),
+    core.tail: lambda x, axis, index: core.tail(x, _shift(axis), index),
 }
