@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import partial
 
 from .core import Interpreter, Primitive, Value, new_interpreter
+from .eval import Array
 from .nested_containers import flatten, map_structure
 
 
@@ -90,6 +91,8 @@ class ComputeGraph:
 
 class Tracer(Value):
     def __init__(self, interpreter, value, const=False):
+        if not isinstance(value, Value):
+            value = Array(value)
         super().__init__(interpreter, value.shape)
         self.value = value
         self.var = Const(value) if const else Var(value.shape)
