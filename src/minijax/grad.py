@@ -90,10 +90,7 @@ def vjp_where(tangent, out, cond, true_val, false_val):
 
 
 def vjp_concat_two(t, _, x, __, axis):
-    return (
-        core.head(t, axis, x.shape[axis]),
-        core.tail(t, axis, x.shape[axis]),
-    )
+    return (core.head(t, axis, x.shape[axis]), core.tail(t, axis, x.shape[axis]))
 
 
 def vjp_head(t, _, x, axis, index):
@@ -109,7 +106,7 @@ def vjp_tail(t, _, x, axis, index):
 
 
 vjp_rules = {
-    core.expand_dims: lambda t, _, x, axes: core.reduce_sum(t, axes),
+    core.expand_dims: lambda t, _, __, axes: core.reduce_sum(t, axes),
     core.moveaxis: lambda t, _, __, source, destination: core.moveaxis(t, destination, source),
     core.reshape: lambda t, _, x, new_shape: core.reshape(t, x.shape),
     core.neg: lambda t, *_: -t,
@@ -118,9 +115,9 @@ vjp_rules = {
     core.dot: vjp_dot,
     core.mul: lambda t, _, x, y: (t * y, x * t),
     core.reciprocal: lambda t, _, x: -core.reciprocal(core.square(x)) * t,
-    core.relu: lambda t, _, x: core.where(x > Array(0), t, Array(0)),
-    core.square: lambda t, _, x: t * Array(2) * x,
-    core.sqrt: lambda t, _, x: t / (Array(2) * core.sqrt(x)),
+    core.relu: lambda t, _, x: core.where(x > 0, t, 0),
+    core.square: lambda t, _, x: t * 2 * x,
+    core.sqrt: lambda t, _, x: t / (2 * core.sqrt(x)),
     core.exp: lambda t, out, _: t * out,
     core.log: lambda t, _, x: t / x,
     core.where: vjp_where,

@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 
 from minijax import core
-from minijax.core import Value, abs
+from minijax.core import Value, abs, where, relu
 from minijax.nested_containers import flatten, map_structure
-from minijax.eval import Array
+from minijax.eval import zeros
 
 
 @dataclass
@@ -58,6 +58,8 @@ class IBPInterpreter(core.Interpreter[IBPValue]):
             out_lb, out_ub = ibp_monotonic_non_increasing(primitive, *values, **options)
         elif primitive in linear_primitives:
             out_lb, out_ub = ibp_linear(primitive, *values, **options)
+        elif primitive is core.square:
+            out_lb, out_ub = ibp_square(*values, **options)
         else:
             raise NotImplementedError(f"No IBP rule for primitive {primitive}")
         return IBPValue(self, out_lb, out_ub)
@@ -80,13 +82,24 @@ def ibp_linear(fn, x, y, **options):
         raise NotImplementedError(f"No IBP rule for bilinear application of primitive {fn}")
     elif x.is_point:
         x = x.lb
-        y_mid = (y.ub + y.lb) * Array(0.5)
-        y_ran = (y.ub - y.lb) * Array(0.5)
+        y_mid = (y.ub + y.lb) * 0.5
+        y_ran = (y.ub - y.lb) * 0.5
         out_mid = fn(x, y_mid, **options)
         out_ran = fn(abs(x), y_ran, **options)
         return out_mid - out_ran, out_mid + out_ran
     elif y.is_point:
         return ibp_linear(lambda y, x: fn(x, y, **options), y, x)
+
+
+def ibp_square(x):
+    y_l, y_r = core.square(x.lb), core.square(x.ub)
+    # x.lb >= 0 => monotonic increasing
+    # x.ub <= 0 => monotonic decreasing
+    # x.lb < 0 < x.ub => lb = 0.0, ub = max(x.lb^2 , x.ub^2)
+    y_lb = where(x.lb >= 0.0, y_l, where(x.ub < 0.0, y_r, zeros(x.shape)))
+    # x.ub > -x.lb => x.ub + x.lb > 0
+    y_ub = where(x.lb >= 0.0, y_r, where(x.ub < 0.0, y_l, where(-x.lb >= x.ub, y_r, y_l)))
+    return y_lb, y_ub
 
 
 mono_non_dec_primitives = {

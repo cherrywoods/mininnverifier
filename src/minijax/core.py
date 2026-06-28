@@ -32,6 +32,21 @@ class Value(ABC):
     def __matmul__(self, other):
         return dot(self, other)
 
+    def __radd__(self, other):
+        return add(other, self)
+
+    def __rsub__(self, other):
+        return sub(other, self)
+
+    def __rmul__(self, other):
+        return mul(other, self)
+
+    def __rtruediv__(self, other):
+        return div(other, self)
+
+    def __rmatmul__(self, other):
+        return dot(other, self)
+
     def __ge__(self, other):
         return greater_equal(self, other)
 
@@ -77,12 +92,18 @@ class Interpreter[V: Value](ABC):
 
 
 def new_interpreter[I: Interpreter](interpreter_cls: type[I], in_values: Iterable[Value]) -> I:
-    top_level = max([val.interpreter.level for val in in_values])
+    levels = [val.interpreter.level for val in in_values if isinstance(val, Value)]
+    top_level = max(levels, default=0)
     return interpreter_cls(top_level + 1)
 
 
 def top_interpreter(values: Iterable[Value]):
-    return max([val.interpreter for val in values], key=lambda i: i.level)
+    interpreters = [val.interpreter for val in values if isinstance(val, Value)]
+    if not interpreters:
+        from .eval import EvalInterpreter  # cannot import at top level (circular import)
+
+        return EvalInterpreter()
+    return max(interpreters, key=lambda i: i.level)
 
 
 @dataclass(frozen=True)
