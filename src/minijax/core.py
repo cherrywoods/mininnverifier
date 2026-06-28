@@ -59,6 +59,9 @@ class Value(ABC):
     def __or__(self, other):
         return elementwise_or(self, other)
 
+    def __getitem__(self, i):
+        return getitem(self, i)
+
 
 class Interpreter[V: Value](ABC):
     def __init__(self, level: int):
@@ -180,6 +183,7 @@ def elementwise_or(x, y):
 def equals(x, y):
     return elementwise_and(greater_equal(x, y), less_equal(x, y))
 
+
 def concat(arg0, *args, axis: int = 0):
     if len(args) == 0:
         return arg0
@@ -200,3 +204,10 @@ def split(x, indices, axis: int = 0):
     pieces.append(rest)
     return tuple(pieces)
 
+
+def getitem(x, i, axis: int = 0):
+    if i < 0:
+        i += x.shape[axis]
+    elem = head(tail(x, axis=axis, index=i), axis=axis, index=1)
+    new_shape = x.shape[:axis] + x.shape[axis + 1 :]
+    return reshape(elem, new_shape=new_shape)
