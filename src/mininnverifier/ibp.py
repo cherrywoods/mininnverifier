@@ -98,7 +98,7 @@ def ibp_square(x):
     # x.lb < 0 < x.ub => lb = 0.0, ub = max(x.lb^2 , x.ub^2)
     y_lb = where(x.lb >= 0.0, y_l, where(x.ub < 0.0, y_r, zeros(x.shape)))
     # x.ub > -x.lb => x.ub + x.lb > 0
-    y_ub = where(x.lb >= 0.0, y_r, where(x.ub < 0.0, y_l, where(-x.lb >= x.ub, y_r, y_l)))
+    y_ub = where(x.lb >= 0.0, y_r, where(x.ub < 0.0, y_l, where(-x.lb >= x.ub, y_l, y_r)))
     return y_lb, y_ub
 
 
