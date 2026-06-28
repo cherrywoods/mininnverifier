@@ -1,5 +1,5 @@
 {
-    "command": "verify",
+    "command": "verify2",
     "network": "resources/mnist_relu_sat_2_network.mininn",
     "inputs": [
         "box",
