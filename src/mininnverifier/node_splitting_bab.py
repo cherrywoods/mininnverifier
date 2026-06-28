@@ -1,12 +1,12 @@
 # Copyright (c) 2026 by David Boetius
 # Licensed under the MIT License.
-from copy import copy
+from math import isclose
 
 import numpy as np
 
 from minijax.compute_graph import make_graph
-from minijax.core import relu, concat, reshape, where, split
-from minijax.eval import zeros
+from minijax.core import relu, concat, reshape, where, split, maximum, minimum
+from minijax.eval import zeros, Array
 
 from .ibp import ibp, Box
 from .lbp import get_in_bounds
@@ -17,17 +17,16 @@ from .input_splitting_bab import pick_worst_lb
 def flatten_splits(splits):
     flat_splits = [reshape(s, new_shape=(-1,)) for s in splits.values()]
     sizes = [s.shape[0] for s in flat_splits]
-    return concat(*flatten_splits), sizes
+    return concat(*flat_splits), sizes
 
 
 def unflatten_splits(split_vector, reference, split_sizes):
-    flat_splits = split(split_vector, split_sizes)
-    return {
-        ov: reshape(flat, split.shape) for flat, (ov, split) in zip(flat_splits, reference.items())
-    }
+    split_points = list(np.cumsum(split_sizes)[:-1])
+    flat_splits = split(split_vector, split_points)
+    return {ov: reshape(f, s.shape) for f, (ov, s) in zip(flat_splits, reference.items())}
 
 
-def split_last(splits, fn):
+def split_last(splits):
     # assumes splits dict is sorted by variable order
     split_vector, split_sizes = flatten_splits(splits)
     num_relus = split_vector.shape[0]
@@ -37,8 +36,9 @@ def split_last(splits, fn):
         if split_vector[i].item() == 0.0:
             last_unsplit = i
             break
+
     if last_unsplit is None:
-        raise RuntimeError("Branch already fully split.")
+        return (splits,)
 
     mask = Array(np.arange(num_relus) == last_unsplit)
     left = where(mask, Array(1.0), split_vector)  # relu >= 0
@@ -67,14 +67,12 @@ def node_splitting_bab(fn, split=split_last, init_bounds=ibp):
         while len(branches) > 0:
             branch_i = pick_worst_lb(branches)
             _, splits = branches.pop(branch_i)
-            for child_splits in split(splits, fn):
-                affine_lb = beta_crown(cg, var_bounds, child_splits)
-                child_bounds = affine_lb.concrete(*get_in_bounds(cg.invars, var_bounds))
-                child_lb, child_ub = child_bounds.lb.item(), child_bounds.ub.item()
-                if child_ub < 0:
-                    # TODO: construct counterexample
-                    return None
-                if child_lb < 0:
+            for child_splits in split(splits):
+                affine_lb = beta_crown_lb(cg, var_bounds, child_splits)
+                child_lb = affine_lb.concrete(*get_in_bounds(cg.invars, var_bounds)).item()
+                # TODO: upper bounds & counterexamples
+                # TODO: prune infeasible branches
+                if child_lb < -1e-8:  # treats floating-point errors
                     branches.append((child_lb, child_splits))
         return None  # Verified
 

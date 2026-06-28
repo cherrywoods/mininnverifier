@@ -11,14 +11,16 @@ from .lbp import get_in_bounds, linear_lower_bound
 from .alpha_crown import crown_relu, init_params as init_alpha_params
 
 
-def beta_crown_lb(cg, var_bounds, splits, lr=0.001, iters=10):
+def beta_crown_lb(cg, var_bounds, splits, lr=0.01, iters=100):
     params = init_params(cg, var_bounds)
 
-    def loss(params):
+    def apply_splits(params):
         # split = 1 => relu split so that input x >= 0 => Lagrange term has negative sign
         # split = -1 => relu split so that input x < 0 => Lagrange term has positive sign
-        params = {ov: (alpha, -splits[ov] * beta) for ov, (alpha, beta) in params.items()}
+        return {ov: (alpha, -splits[ov] * beta) for ov, (alpha, beta) in params.items()}
 
+    def loss(params):
+        params = apply_splits(params)
         affine_lb = linear_lower_bound(cg, var_bounds, params, beta_crown_rules)
         return affine_lb.concrete(*get_in_bounds(cg.invars, var_bounds))
 
@@ -35,7 +37,7 @@ def beta_crown_lb(cg, var_bounds, splits, lr=0.001, iters=10):
             params = map_structure(lambda p, g: p + lr * g, params, gs)
             params = {ov: project_params(node) for ov, node in params.items()}
 
-    return linear_lower_bound(cg, var_bounds, params, beta_crown_rules)
+    return linear_lower_bound(cg, var_bounds, apply_splits(params), beta_crown_rules)
 
 
 def init_params(cg, var_bounds):
