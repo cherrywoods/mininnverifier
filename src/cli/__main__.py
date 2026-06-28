@@ -14,6 +14,7 @@ from cli.eval import main as eval_main
 from cli.grad import main as grad_main
 from cli.train import main as train_main
 from cli.verify import main as verify_main
+from cli.verify2 import main as verify2_main
 
 
 SUBCOMMANDS = {
@@ -23,6 +24,7 @@ SUBCOMMANDS = {
     "affine_bounds": affine_bounds_main,
     "train": train_main,
     "verify": verify_main,
+    "verify2": verify2_main,
 }
 
 
