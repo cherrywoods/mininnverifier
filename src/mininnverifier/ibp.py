@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from minijax import core
 from minijax.core import Value, abs, where, relu
-from minijax.nested_containers import flatten, map_structure
-from minijax.eval import zeros
+from minijax.nested_containers import map_structure
+from minijax.eval import Array, zeros
 
 
 @dataclass
@@ -20,12 +20,10 @@ def box_or_val(obj):
 
 def ibp(fn):
     def ibp_fn(*args: Box | core.Value, **kwargs):
-        flat_args = flatten(args, is_leaf=box_or_val)[0]
-        level_values = [a.lb if isinstance(a, Box) else a for a in flat_args]
-        interpreter = core.new_interpreter(IBPInterpreter, level_values)
-        vals = map_structure(interpreter.wrap, args, is_leaf=box_or_val)
+        with core.new_interpreter(IBPInterpreter()) as interpreter:
+            vals = map_structure(interpreter.wrap, args, is_leaf=box_or_val)
+            out_bounds = fn(*vals, **kwargs)
 
-        out_bounds = fn(*vals, **kwargs)
         return map_structure(lambda ibp_val: Box(ibp_val.lb, ibp_val.ub), out_bounds)
 
     return ibp_fn
@@ -45,6 +43,8 @@ class IBPInterpreter(core.Interpreter[IBPValue]):
             return value
         elif isinstance(value, Box):
             return IBPValue(self, value.lb, value.ub)
+        if not isinstance(value, core.Value):
+            value = Array(value)
         return IBPValue(self, value, value, is_point=True)
 
     def process(self, primitive, values, options):

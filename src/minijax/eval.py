@@ -36,9 +36,6 @@ def broadcast_to(value, shape):
 
 
 class EvalInterpreter(core.Interpreter[Array]):
-    def __init__(self):
-        super().__init__(0)
-
     def wrap(self, value):
         if not isinstance(value, core.Value):
             return Array(value)
@@ -66,7 +63,7 @@ eval_rules = {
     core.reshape: lambda x, new_shape: np.reshape(x, new_shape),
     core.neg: lambda x: -x,
     core.add: lambda x, y: x + y,
-    core.reduce_sum: lambda x, axes: x.sum(axes),
+    core.reduce_sum: lambda x, axes: x.sum(tuple(axes)),
     core.dot: np_dot,
     core.mul: lambda x, y: x * y,
     core.reciprocal: lambda x: 1 / x,

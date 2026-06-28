@@ -2,6 +2,7 @@
 # Licensed under the MIT Licensed.
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 
 
@@ -79,9 +80,6 @@ class Value(ABC):
 
 
 class Interpreter[V: Value](ABC):
-    def __init__(self, level: int):
-        self.level = level
-
     @abstractmethod
     def wrap(self, value: Value) -> V:
         raise NotImplementedError()
@@ -91,19 +89,26 @@ class Interpreter[V: Value](ABC):
         raise NotImplementedError()
 
 
-def new_interpreter[I: Interpreter](interpreter_cls: type[I], in_values: Iterable[Value]) -> I:
-    levels = [val.interpreter.level for val in in_values if isinstance(val, Value)]
-    top_level = max(levels, default=0)
-    return interpreter_cls(top_level + 1)
+_interpreter_stack: list[Interpreter] = []
+
+
+@contextmanager
+def new_interpreter(interpreter: Interpreter):
+    _interpreter_stack.append(interpreter)
+    try:
+        yield interpreter
+    finally:
+        _interpreter_stack.pop()
 
 
 def top_interpreter(values: Iterable[Value]):
-    interpreters = [val.interpreter for val in values if isinstance(val, Value)]
-    if not interpreters:
-        from .eval import EvalInterpreter  # cannot import at top level (circular import)
+    owners = {val.interpreter for val in values if isinstance(val, Value)}
+    for interpreter in reversed(_interpreter_stack):
+        if interpreter in owners:
+            return interpreter
+    from .eval import EvalInterpreter  # cannot import at top level (circular import)
 
-        return EvalInterpreter()
-    return max(interpreters, key=lambda i: i.level)
+    return EvalInterpreter()
 
 
 @dataclass(frozen=True)
