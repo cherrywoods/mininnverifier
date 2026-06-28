@@ -111,9 +111,9 @@ vjp_rules = {
     core.dot: vjp_dot,
     core.mul: lambda t, _, x, y: (t * y, x * t),
     core.reciprocal: lambda t, _, x: -core.reciprocal(core.square(x)) * t,
-    core.relu: lambda t, out, x: core.where(out, t, Array(0)),  # np.bool_(0) = False
-    core.square: lambda t, _, x: t * Array(2) * x,
-    core.sqrt: lambda t, _, x: t / (Array(2) * core.sqrt(x)),
+    core.relu: lambda t, out, x: core.where(out, t, 0),  # np.bool_(0) = False
+    core.square: lambda t, _, x: t * 2 * x,
+    core.sqrt: lambda t, _, x: t / (2 * core.sqrt(x)),
     core.exp: lambda t, out, x: t * out,
     core.log: lambda t, _, x: t / x,
     core.where: vjp_where,
