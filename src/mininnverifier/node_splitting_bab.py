@@ -1,11 +1,9 @@
 # Copyright (c) 2026 by David Boetius
 # Licensed under the MIT License.
-from math import isclose
-
 import numpy as np
 
 from minijax.compute_graph import make_graph
-from minijax.core import relu, concat, reshape, where, split, maximum, minimum
+from minijax.core import relu, concat, reshape, where, split
 from minijax.eval import zeros, Array
 
 from .ibp import ibp, Box
@@ -41,8 +39,8 @@ def split_last(splits):
         return (splits,)
 
     mask = Array(np.arange(num_relus) == last_unsplit)
-    left = where(mask, Array(1.0), split_vector)  # relu >= 0
-    right = where(mask, Array(-1.0), split_vector)  # relu == 0
+    left = where(mask, 1.0, split_vector)  # relu >= 0
+    right = where(mask, -1.0, split_vector)  # relu == 0
     left = unflatten_splits(left, splits, split_sizes)
     right = unflatten_splits(right, splits, split_sizes)
     return left, right

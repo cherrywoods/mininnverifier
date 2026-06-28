@@ -4,7 +4,7 @@
 from minijax import core
 from minijax.core import relu
 from minijax.nested_containers import map_structure
-from minijax.eval import Array, zeros
+from minijax.eval import zeros
 from minijax.grad import grad
 
 from .lbp import get_in_bounds, linear_lower_bound
@@ -25,12 +25,11 @@ def beta_crown_lb(cg, var_bounds, splits, lr=0.01, iters=100):
         return affine_lb.concrete(*get_in_bounds(cg.invars, var_bounds))
 
     def project_params(node_params):
-        alpha = core.clip(node_params[0], Array(0.0), Array(1.0))
-        beta = core.maximum(node_params[1], Array(0.0))
+        alpha = core.clip(node_params[0], 0.0, 1.0)
+        beta = core.maximum(node_params[1], 0.0)
         return (alpha, beta)
 
     p_grads = grad(loss)
-    lr = Array(lr)
     if len(params) > 0:
         for _ in range(iters):
             gs = p_grads(params)[0]

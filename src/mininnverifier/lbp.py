@@ -41,7 +41,7 @@ def get_in_bounds(in_atoms, var_bounds):
 def linear_lower_bound(cg, var_bounds, params, rules):
     if len(cg.outvars) != 1:
         raise NotImplementedError("LBP only supports functions with a single return value.")
-    if cg.outvars[0].shape != ():
+    if cg.outvars[0].shape not in ((), (1,)):
         raise NotImplementedError("LBP only supports functions with a scalar output.")
 
     weights = {cg.outvars[0]: Array(1.0)}

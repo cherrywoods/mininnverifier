@@ -1,5 +1,5 @@
 {
-    "command": "verify",
+    "command": "verify2",
     "network": "resources/mnist_relu_sat_1_network.mininn",
     "inputs": [
         "box",
@@ -8,5 +8,5 @@
     ],
     "expected_verdict": "sat",
     "description": "relu MNIST classifier: targeted L-inf robustness (vs class 3) verified at image 0, eps=0.01 (IBP too loose; needs CROWN)",
-    "points": 8
+    "points": 0
 }

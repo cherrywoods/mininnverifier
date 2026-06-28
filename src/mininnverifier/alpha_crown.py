@@ -5,7 +5,7 @@ from minijax import core
 from minijax.compute_graph import make_graph
 from minijax.core import relu, where
 from minijax.nested_containers import map_structure
-from minijax.eval import Array, zeros, ones
+from minijax.eval import zeros, ones
 from minijax.grad import grad
 
 from .ibp import ibp, box_or_val, Box
@@ -40,12 +40,11 @@ def alpha_crown_optim(cg, var_bounds, lr=0.001, iters=10):
 
     p_grads = grad(loss)
     params = init_params(cg, var_bounds)
-    lr = Array(lr)
     if len(params) > 0:  # no params => no need to optimize
         for _ in range(iters):  # gradient *ascent* on alpha => maximize the lower bound
             gs = p_grads(params)[0]
             params = map_structure(lambda p, g: p + lr * g, params, gs)
-            params = map_structure(lambda p: core.clip(p, Array(0.0), Array(1.0)), params)
+            params = map_structure(lambda p: core.clip(p, 0.0, 1.0), params)
 
     return linear_lower_bound(cg, var_bounds, params, crown_rules)
 
