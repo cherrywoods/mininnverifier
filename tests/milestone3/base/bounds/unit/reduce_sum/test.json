@@ -29,5 +29,6 @@
     "tightness_factor": 1.5,
     "sample_atol": 1e-09,
     "description": "CROWN affine output bounds for the scalarised milestone1 'reduce_sum' network over an L-inf box (eps=0.05) [reference: auto_LiRPA CROWN-IBP (IBP intermediate bounds + CROWN output pass, matching crown.py; intersected with auto_LiRPA IBP)]",
-    "points": 0
+    "points": 0,
+    "bonus_points": 0
 }

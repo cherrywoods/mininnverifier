@@ -28,5 +28,6 @@
     "tightness_factor": 1.5,
     "sample_atol": 1e-09,
     "description": "CROWN-IBP affine bounds on the relu MNIST classifier's min-margin (predicted class 7) over an L-inf box [reference: auto_LiRPA CROWN-IBP (IBP intermediate bounds + CROWN output pass, matching crown.py; intersected with auto_LiRPA IBP)]",
-    "points": 0
+    "points": 0,
+    "bonus_points": 0
 }
